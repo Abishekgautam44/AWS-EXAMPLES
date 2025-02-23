@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+echo "==delete objects all"
+if [ -z "$1" ]; then
+  echo "There needs to be a bucket name eg. /bucket my-bucket-name"
+  exit 1
+fi
+aws s3 rm s3://$1 --recursive

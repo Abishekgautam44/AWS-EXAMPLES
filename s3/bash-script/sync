@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+echo "sync"
+
+set -e
+BUCKET_NAME=$1
+FILENAME_PREFIX=$2
+if [ -z "$2" ]; then
+    echo "There needs to be a bucket name eg. /bucket my-bucket-name"
+    exit 1
+fi
+
+OUTPUT_DIR="/tmp/s3-bash-scripts"
+
+rm -rf $OUTPUT_DIR
+#if you do not remove the files it will generate the same number of files as the previous run
+mkdir -p $OUTPUT_DIR
+
+NUM_FILES=$(( RANDOM %6 + 5  ))
+#number of files will be between 5 and 10
+for i in $(seq 1 $NUM_FILES); do
+    FILENAME="$OUTPUT_DIR/${FILENAME_PREFIX}$i.txt"
+    dd if=/dev/urandom of=$FILENAME bs=1024 count=$(( RANDOM % 1024 + 1 )) > /dev/null 2>&1
+#diskdump will create a file with random data if=inputfile, of=outputfile, bs=blocksize, count=number of blocks
+    echo "Created file $FILENAME"
+done
+tree $OUTPUT_DIR
+
+s3 sync $OUTPUT_DIR s3://$BUCKET_NAME/files
